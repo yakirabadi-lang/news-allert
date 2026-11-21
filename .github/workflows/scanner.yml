@@ -59,6 +59,7 @@ jobs:
                   feed = feedparser.parse(rss_url)
                   for entry in feed.entries[:3]:
                       news_data += f'- {entry.title}: {entry.description}\n'
+                  print("RSS fetched len:",len(news_data))   
               except Exception as e:
                   print('RSS error:', e)
 
@@ -76,7 +77,9 @@ jobs:
 
           try:
               model = genai.GenerativeModel('gemini-3.8-flash')
-              response = model.generate_content(prompt)
+              print("calling gemini...")
+              response = model.generate_content(prompt,request_options={"timeout":20})
+              print("gemini done")
               result_text = response.text.strip()
               if result_text != 'QUIET':
                   send_telegram(result_text)
