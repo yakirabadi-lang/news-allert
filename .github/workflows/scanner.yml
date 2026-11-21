@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests google-generativeai feedparser
+          pip install requests google-genai feedparser
 
       - name: Run Monitoring Script
         env:
