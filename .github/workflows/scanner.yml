@@ -86,3 +86,4 @@ jobs:
           except Exception as e:
               print('AI error:', e)
           "
+          EOF
