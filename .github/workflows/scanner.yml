@@ -76,7 +76,7 @@ jobs:
           ''' % news_data
 
           try:
-              model = genai.GenerativeModel('gemini-2.5-flash')
+              model = genai.GenerativeModel('gemini-2.0-flash')
               print("calling gemini...")
               response = model.generate_content(prompt,request_options={"timeout":60})
               print("gemini done")
