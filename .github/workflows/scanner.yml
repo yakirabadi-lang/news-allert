@@ -85,5 +85,5 @@ jobs:
                   send_telegram(result_text)
           except Exception as e:
               print('AI error:', e)
-          "
+          
           EOF
