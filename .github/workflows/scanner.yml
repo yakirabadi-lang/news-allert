@@ -75,7 +75,7 @@ jobs:
           ''' % news_data
 
           try:
-              model = genai.GenerativeModel('gemini-2.5-flash')
+              model = genai.GenerativeModel('gemini-3.0-flash')
               response = model.generate_content(prompt)
               result_text = response.text.strip()
               if result_text != 'QUIET':
