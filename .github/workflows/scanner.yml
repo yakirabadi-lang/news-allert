@@ -78,7 +78,7 @@ jobs:
           try:
               model = genai.GenerativeModel('gemini-3.8-flash')
               print("calling gemini...")
-              response = model.generate_content(prompt,request_options={"timeout":60})
+              response = model.generate_content(prompt,request_options={"timeout":120})
               print("gemini done")
               result_text = response.text.strip()
               if result_text != 'QUIET':
