@@ -76,7 +76,7 @@ jobs:
           ''' % news_data
 
           try:
-              model = genai.GenerativeModel('gemini-3.8-flash')
+              client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
               print("calling gemini...")
               response = model.generate_content(prompt,request_options={"timeout":120})
               print("gemini done")
