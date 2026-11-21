@@ -78,7 +78,7 @@ jobs:
           try:
               client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
               print("calling gemini...")
-              response = model.generate_content(prompt,request_options={"timeout":120})
+              response = client.models.generate_content(model="gemini-2.5-flash", contents=promt,config=types.GenerateContentConfig(http_options=types.HttpOptions(timeout=120000)))
               print("gemini done")
               result_text = response.text.strip()
               if result_text != 'QUIET':
