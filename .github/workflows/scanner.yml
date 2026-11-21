@@ -1,0 +1,85 @@
+name: Iran US Radar
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check_situation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests google-generativeai feedparser
+
+      - name: Run Monitoring Script
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python -c "
+          import os
+          import json
+          import requests
+          import google.generativeai as genai
+          import feedparser
+
+          bot_token = os.environ['TELEGRAM_TOKEN']
+          chat_id = os.environ['TELEGRAM_CHAT_ID']
+          gemini_key = os.environ['GEMINI_API_KEY']
+          genai.configure(api_key=gemini_key)
+
+          def send_telegram(message):
+              url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+              payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
+              try:
+                  requests.post(url, json=payload)
+              except Exception as e:
+                  print('Telegram error:', e)
+
+          rss_urls = [
+              'https://www.ynet.co.il/Integration/StoryRss1854.xml',
+              'https://www.jpost.com/Rss/RssFeedsHeadlines.aspx',
+              'https://feeds.feedburner.com/reporters/latestheadlines'
+          ]
+          
+          news_data = ''
+          for rss_url in rss_urls:
+              try:
+                  feed = feedparser.parse(rss_url)
+                  for entry in feed.entries[:3]:
+                      news_data += f'- {entry.title}: {entry.description}\n'
+              except Exception as e:
+                  print('RSS error:', e)
+
+          prompt = '''
+          You are a strict geopolitical intelligence monitor tracking signs of military escalation, 
+          naval blockades in Hormuz, significant troop movements, or major escalations between the 
+          United States and Iran. Review the following news headlines and summaries:
+
+          %s
+
+          Analyze if these indicate a credible escalation (Level 1: Routine tension/posturing, Level 2: Heightened alert/threat, Level 3: Active conflict/strike).
+          If there is NO significant sign of escalation between the US and Iran, output strictly the word 'QUIET'.
+          If there is a credible sign, output a brief Hebrew summary with the urgency level (🟡 Level 1, 🟠 Level 2, or 🔴 Level 3), what happened, and why it matters.
+          ''' % news_data
+
+          try:
+              model = genai.GenerativeModel('gemini-1.5-flash')
+              response = model.generate_content(prompt)
+              result_text = response.text.strip()
+              if result_text != 'QUIET':
+                  send_telegram(result_text)
+          except Exception as e:
+              print('AI error:', e)
+          "
